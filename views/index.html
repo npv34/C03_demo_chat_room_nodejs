@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+Danh sach nguoi dung room:
+<ul id="list-user-room">
+
+</ul>
+Chat:
+
+<ul id="content-chat">
+
+</ul>
+
+<input type="text" id="message">
+<button onclick="sendMessage()">Chat</button>
+
+<script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
+<script>
+    let socket = io('http://localhost:8080')
+
+    let name = prompt('Login voi username: ')
+    socket.emit('login', {username: name})
+
+    socket.on('show-user-room', (data) => {
+        let usersRoom = data.usersRoom;
+
+        let html = '';
+
+        usersRoom.forEach(item => {
+            html += `<li style="color: ${item.color}">${item.username}</li>`;
+        })
+
+        console.log(usersRoom)
+        document.getElementById('list-user-room').innerHTML = html;
+
+    })
+
+    socket.on('read-message', (data) => {
+        const node = document.createElement("li");
+        const textnode = document.createTextNode(`${data.message}`);
+        node.appendChild(textnode);
+        document.getElementById('content-chat').appendChild(node);
+        document.getElementById('message').value = '';
+
+    })
+
+    function sendMessage() {
+        let text = document.getElementById('message').value;
+
+        let data = {
+            id: socket.id,
+            message: text
+        }
+        socket.emit('send-message', data)
+    }
+
+</script>
+</body>
+</html>
